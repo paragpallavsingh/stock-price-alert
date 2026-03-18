@@ -1,0 +1,38 @@
+name: Build and Push to GCP
+
+on:
+  push:
+    branches: [ "main" ]
+
+# CRITICAL: This allows GitHub to request the OIDC token from GCP
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Google Auth (Keyless)
+      id: auth
+      uses: 'google-github-actions/auth@v2'
+      with:
+        # Using your resurrected pool and your specific project number
+        workload_identity_provider: 'projects/909103356748/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+        service_account: 'github-actions-reporter@stock-price-alert-gcp.iam.gserviceaccount.com'
+
+    - name: Set up Cloud SDK
+      uses: 'google-github-actions/setup-gcloud@v2'
+
+    - name: Configure Docker for GCP
+      run: |
+        gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+
+    - name: Build and Push Docker Image
+      run: |
+        # We tag the image with 'latest' and the specific commit SHA for better tracking
+        docker build -t us-central1-docker.pkg.dev/stock-price-alert-gcp/stock-apps/app:latest .
+        docker push us-central1-docker.pkg.dev/stock-price-alert-gcp/stock-apps/app:latest
