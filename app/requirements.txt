@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+celery
+redis
+yfinance
+psycopg2-binary
