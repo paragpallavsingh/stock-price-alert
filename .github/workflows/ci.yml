@@ -32,7 +32,9 @@ jobs:
         gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
     - name: Build and Push Docker Image
+      env:
+        # This pulls the secret from GitHub's vault into the build environment
+        ALPHA_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}
       run: |
-        # We tag the image with 'latest' and the specific commit SHA for better tracking
         docker build -t us-central1-docker.pkg.dev/stock-price-alert-gcp/stock-apps/app:latest .
         docker push us-central1-docker.pkg.dev/stock-price-alert-gcp/stock-apps/app:latest

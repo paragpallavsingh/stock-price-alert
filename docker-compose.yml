@@ -1,23 +1,20 @@
-version: '3.8'
-
 services:
-  redis:
-    image: redis:7-alpine
-    restart: always
-
   app:
-    build: .
+    image: us-central1-docker.pkg.dev/stock-price-alert-gcp/stock-apps/app:latest
     ports:
       - "8000:8000"
-    environment:
-      - REDIS_URL=redis://redis:6379/0
+    env_file: .env
     depends_on:
       - redis
 
   worker:
-    build: .
+    image: us-central1-docker.pkg.dev/stock-price-alert-gcp/stock-apps/app:latest
     command: celery -A tasks worker --loglevel=info
-    environment:
-      - REDIS_URL=redis://redis:6379/0
+    env_file: .env
     depends_on:
       - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
